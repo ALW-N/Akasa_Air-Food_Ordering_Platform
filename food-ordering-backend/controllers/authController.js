@@ -1,7 +1,8 @@
+
 // controllers/authController.js
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken'); // Import jsonwebtoken
+const jwt = require('jsonwebtoken');
 
 const registerUser = async (req, res) => {
     const { firstName, lastName, phoneNumber, email, password } = req.body;
@@ -18,7 +19,8 @@ const registerUser = async (req, res) => {
             lastName,
             phoneNumber,
             email,
-            password: hashedPassword
+            password: hashedPassword,
+            role: 'user' // Always assign 'user' role during registration
         });
         await newUser.save();
 
@@ -32,6 +34,13 @@ const loginUser = async (req, res) => {
     const { identifier, password } = req.body;
 
     try {
+        // Check if it's the static admin user
+        if (identifier === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
+            const token = jwt.sign({ id: 'admin', role: 'admin' }, process.env.JWT_SECRET, { expiresIn: '1h' });
+            return res.status(200).json({ message: 'Admin logged in successfully', token });
+        }
+
+        // Otherwise, treat as a regular user
         const user = await User.findOne({
             $or: [
                 { email: identifier },
@@ -48,14 +57,15 @@ const loginUser = async (req, res) => {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
-        // Generate a JWT token
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        // Generate a JWT token with user's role (user role in this case)
+        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
         res.status(200).json({ message: 'User logged in successfully', token });
     } catch (error) {
         res.status(500).json({ message: 'Login failed', error: error.message });
     }
 };
+
 
 module.exports = {
     registerUser,

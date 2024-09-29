@@ -7,6 +7,7 @@ import HomePage from './pages/HomePage';
 // Import any additional pages you want to include
 import ProfilePage from './pages/ProfilePage'; // Example of another page
 import CartPage from './pages/CartPage'; // Example for cart page
+import AdminDashboard from './pages/AdminDashboard';
 
 const App = () => {
   return (
@@ -15,6 +16,7 @@ const App = () => {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/admin-dashboard" element={<AdminDashboard />} />
           <Route path="/home" element={<HomePage />} />
           <Route path="/" element={<LandingPage />} />
           {/* Additional Routes */}
