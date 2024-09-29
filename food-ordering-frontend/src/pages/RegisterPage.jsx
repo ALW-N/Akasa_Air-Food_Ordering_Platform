@@ -1,18 +1,15 @@
-// src/pages/RegisterPage.js
 import React, { useState } from 'react';
-import axios from 'axios';
-import { useHistory } from 'react-router-dom';
+import axios from '../axiosInstance'; // Import the axios instance
 
 const RegisterPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const history = useHistory();
 
   const handleRegister = async () => {
     try {
       await axios.post('/api/auth/register', { email, password });
-      history.push('/login'); // Redirect to login page after registration
+      // Redirect to login or home page after successful registration
     } catch (error) {
       setErrorMessage(error.response?.data?.message || 'Registration failed');
     }

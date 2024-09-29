@@ -1,19 +1,16 @@
-// src/pages/LoginPage.js
 import React, { useState } from 'react';
-import axios from 'axios';
-import { useHistory } from 'react-router-dom';
+import axios from '../axiosInstance'; // Import the axios instance
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const history = useHistory();
 
   const handleLogin = async () => {
     try {
       const response = await axios.post('/api/auth/login', { email, password });
       localStorage.setItem('token', response.data.token); // Store JWT token
-      history.push('/inventory'); // Redirect after login
+      // Redirect to another page if needed
     } catch (error) {
       setErrorMessage(error.response?.data?.message || 'Login failed');
     }
