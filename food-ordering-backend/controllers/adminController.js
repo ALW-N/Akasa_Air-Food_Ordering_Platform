@@ -1,8 +1,8 @@
-const Category = require('../models/Category');
-const Product = require('../models/Product');
+const Category = require('../models/Category'); // Keep this import
+const Product = require('../models/Product'); // Keep this import
 
 const createCategory = async (req, res) => {
-    const { name } = req.body;
+    const { name, image } = req.body;
 
     try {
         const existingCategory = await Category.findOne({ name });
@@ -10,7 +10,7 @@ const createCategory = async (req, res) => {
             return res.status(400).json({ message: 'Category already exists' });
         }
 
-        const newCategory = new Category({ name });
+        const newCategory = new Category({ name, image });
         await newCategory.save();
 
         res.status(201).json({ message: 'Category created successfully' });
@@ -19,17 +19,9 @@ const createCategory = async (req, res) => {
     }
 };
 
-const getCategories = async (req, res) => {
-    try {
-        const categories = await Category.find();
-        res.status(200).json(categories);
-    } catch (error) {
-        res.status(500).json({ message: 'Failed to retrieve categories', error: error.message });
-    }
-};
-
 const createProduct = async (req, res) => {
     const { name, description, price, category, quantity } = req.body;
+    const image = req.file ? req.file.path : null; // Get the uploaded image path
 
     try {
         const existingProduct = await Product.findOne({ name });
@@ -43,12 +35,22 @@ const createProduct = async (req, res) => {
             price,
             category,
             quantity,
+            image, // Save the image path
         });
         await newProduct.save();
 
         res.status(201).json({ message: 'Product created successfully' });
     } catch (error) {
         res.status(500).json({ message: 'Product creation failed', error: error.message });
+    }
+};
+
+const getCategories = async (req, res) => {
+    try {
+        const categories = await Category.find();
+        res.status(200).json(categories);
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to retrieve categories', error: error.message });
     }
 };
 
@@ -75,6 +77,10 @@ const updateProduct = async (req, res) => {
         if (price !== undefined) product.price = price;
         if (category) product.category = category;
         if (quantity !== undefined) product.quantity = quantity;
+
+        if (req.file) {
+            product.image = req.file.path; // Update image URL/path if a new image is uploaded
+        }
 
         await product.save();
         res.status(200).json({ message: 'Product updated successfully' });

@@ -13,13 +13,13 @@ const authMiddleware = require('../middleware/authMiddleware');
 const router = express.Router();
 
 // POST /api/admin/category
-router.post('/category', authMiddleware, createCategory);
+router.post('/category', authMiddleware, createCategory); // No image upload needed here
 
 // GET /api/admin/categories
 router.get('/categories', authMiddleware, getCategories);
 
 // POST /api/admin/product
-router.post('/product', authMiddleware, createProduct);
+router.post('/product', authMiddleware, createProduct); // Add image upload middleware if necessary
 
 // GET /api/admin/products
 router.get('/products', authMiddleware, getProducts);
