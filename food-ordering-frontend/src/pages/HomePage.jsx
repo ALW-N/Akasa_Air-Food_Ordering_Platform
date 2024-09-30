@@ -37,11 +37,7 @@ const HomePage = () => {
   };
 
   const handleClickOutside = (event) => {
-    if (
-      menuOpen &&
-      menuRef.current &&
-      !menuRef.current.contains(event.target)
-    ) {
+    if (menuOpen && menuRef.current && !menuRef.current.contains(event.target)) {
       setMenuOpen(false);
     }
   };
@@ -68,9 +64,7 @@ const HomePage = () => {
       ? product.category.toString() === selectedCategory.toString()
       : true;
 
-    const matchesSearchTerm = product.name
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
+    const matchesSearchTerm = product.name.toLowerCase().includes(searchTerm.toLowerCase());
 
     return matchesCategory && matchesSearchTerm;
   });
@@ -218,9 +212,8 @@ const HomePage = () => {
               borderRadius: "8px",
               padding: "10px",
               marginRight: "10px",
-              minWidth: "200px", // Adjusted to give more width
+              minWidth: "200px",
               textAlign: "center",
-              cursor: "pointer",
             }}
           >
             {/* Category Image */}
@@ -233,10 +226,10 @@ const HomePage = () => {
                 }
                 alt={category.name}
                 style={{
-                  width: "100%", // Full width of the container
-                  height: "150px", // Set a larger height
-                  objectFit: "cover", // Ensures the image covers the area without distortion
-                  borderRadius: "8px", // Keeps the border-radius for a smooth look
+                  width: "100%",
+                  height: "150px", // Fixed height for consistency
+                  objectFit: "cover",
+                  borderRadius: "8px",
                   marginBottom: "10px",
                 }}
               />
@@ -253,7 +246,6 @@ const HomePage = () => {
                   justifyContent: "center",
                 }}
               >
-                {/* Fallback content if no image */}
                 No Image
               </div>
             )}
@@ -263,102 +255,72 @@ const HomePage = () => {
       </div>
 
       {/* Products Section - Grid Layout */}
-      <h2 style={{ marginTop: "20px" }}>Products</h2>
-      {filteredProducts.length > 0 ? (
-        <div
+<h2 style={{ marginTop: "20px" }}>Products</h2>
+{filteredProducts.length > 0 ? (
+  <div
+    style={{
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+      gap: "20px",
+      marginTop: "20px",
+      // Removed maxHeight and overflowY to allow it to expand
+    }}
+  >
+    {filteredProducts.map((product) => (
+      <div
+        key={product._id}
+        style={{
+          border: "1px solid #ccc",
+          borderRadius: "8px",
+          padding: "10px",
+          textAlign: "center",
+        }}
+      >
+        <img
+          src={
+            product.image && product.image.startsWith("data:image")
+              ? product.image
+              : `data:image/jpeg;base64,${product.image}`
+          }
+          alt={product.name}
           style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-            gap: "20px",
-            marginTop: "20px",
+            width: "100%",
+            height: "150px",
+            objectFit: "cover",
+            borderRadius: "8px",
           }}
-        >
-          {filteredProducts.map((product) => (
-            <div
-              key={product._id}
-              style={{
-                border: "1px solid #ccc",
-                borderRadius: "8px",
-                padding: "10px",
-                textAlign: "center",
-              }}
-            >
-              <img
-                src={
-                  product.image && product.image.startsWith("data:image")
-                    ? product.image
-                    : `data:image/jpeg;base64,${product.image}`
-                }
-                alt={product.name}
-                style={{
-                  width: "100%",
-                  height: "150px",
-                  objectFit: "cover",
-                  marginBottom: "10px",
-                }}
-              />
+        />
+        <h3>{product.name}</h3>
+        <p>Price: ₹{product.price.toFixed(2)}</p>
 
-              <h3>{product.name}</h3>
-              <p>${product.price}</p>
-              {cartItems[product._id] ? (
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                >
-                  <button
-                    onClick={() => handleRemoveFromCart(product)}
-                    style={{
-                      padding: "5px 10px",
-                      backgroundColor: "#e74c3c",
-                      color: "white",
-                      borderRadius: "5px",
-                      border: "none",
-                      cursor: "pointer",
-                    }}
-                  >
-                    -
-                  </button>
-                  <span style={{ margin: "0 10px" }}>
-                    {cartItems[product._id]}
-                  </span>
-                  <button
-                    onClick={() => handleAddToCart(product)}
-                    style={{
-                      padding: "5px 10px",
-                      backgroundColor: "#2ecc71",
-                      color: "white",
-                      borderRadius: "5px",
-                      border: "none",
-                      cursor: "pointer",
-                    }}
-                  >
-                    +
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={() => handleAddToCart(product)}
-                  style={{
-                    padding: "10px 20px",
-                    backgroundColor: "#3498db",
-                    color: "white",
-                    borderRadius: "5px",
-                    border: "none",
-                    cursor: "pointer",
-                  }}
-                >
-                  Add
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p>No products found.</p>
-      )}
+        {cartItems[product._id] ? (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "10px" }}>
+            <button onClick={() => handleRemoveFromCart(product)}>-</button>
+            <span>{cartItems[product._id]}</span>
+            <button onClick={() => handleAddToCart(product)}>+</button>
+          </div>
+        ) : (
+          <button
+            onClick={() => handleAddToCart(product)}
+            style={{
+              backgroundColor: "#2ecc71",
+              color: "white",
+              padding: "10px",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer",
+            }}
+          >
+            Add to Cart
+          </button>
+        )}
+      </div>
+    ))}
+  </div>
+) : (
+  <p>No products found.</p>
+)}
+
     </div>
   );
 };
