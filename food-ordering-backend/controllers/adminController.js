@@ -20,30 +20,38 @@ const createCategory = async (req, res) => {
 };
 
 const createProduct = async (req, res) => {
-    const { name, description, price, category, quantity } = req.body;
-    const image = req.file ? req.file.path : null; // Get the uploaded image path
+    const { name, description, price, category, quantity, image } = req.body; // Include image from body
 
     try {
+        // Validate incoming data
+        if (!name || !description || !price || !category || !quantity || !image) {
+            return res.status(400).json({ message: 'All fields are required' });
+        }
+
         const existingProduct = await Product.findOne({ name });
         if (existingProduct) {
             return res.status(400).json({ message: 'Product already exists' });
         }
 
+        // Create new product
         const newProduct = new Product({
             name,
             description,
             price,
             category,
             quantity,
-            image, // Save the image path
+            image, // Use the Base64 image
         });
+
         await newProduct.save();
 
-        res.status(201).json({ message: 'Product created successfully' });
+        res.status(201).json({ message: 'Product created successfully', product: newProduct });
     } catch (error) {
+        console.error("Error creating product:", error); // Log the error
         res.status(500).json({ message: 'Product creation failed', error: error.message });
     }
 };
+
 
 const getCategories = async (req, res) => {
     try {

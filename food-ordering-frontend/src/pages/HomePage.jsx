@@ -53,7 +53,7 @@ const HomePage = () => {
     };
   }, [menuOpen]);
 
-  // Updated handleCategoryClick to toggle category selection
+  // Handle category selection
   const handleCategoryClick = (categoryId) => {
     if (selectedCategory === categoryId) {
       setSelectedCategory(null); // If the category is already selected, set it to null
@@ -63,11 +63,39 @@ const HomePage = () => {
   };
 
   // Adjust the filtering logic
-  const filteredProducts = selectedCategory
-    ? products.filter(
-        (product) => product.category.toString() === selectedCategory.toString()
-      )
-    : products;
+  const filteredProducts = products.filter((product) => {
+    const matchesCategory = selectedCategory
+      ? product.category.toString() === selectedCategory.toString()
+      : true;
+
+    const matchesSearchTerm = product.name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+
+    return matchesCategory && matchesSearchTerm;
+  });
+
+  // Handle cart updates
+  const handleAddToCart = (product) => {
+    setCartItems((prevItems) => ({
+      ...prevItems,
+      [product._id]: prevItems[product._id] ? prevItems[product._id] + 1 : 1,
+    }));
+  };
+
+  const handleRemoveFromCart = (product) => {
+    setCartItems((prevItems) => {
+      const updatedItems = { ...prevItems };
+
+      if (updatedItems[product._id] > 1) {
+        updatedItems[product._id] -= 1;
+      } else {
+        delete updatedItems[product._id]; // Remove the item from the cart if count reaches 0
+      }
+
+      return updatedItems;
+    });
+  };
 
   return (
     <div style={{ padding: "20px" }}>
@@ -234,18 +262,102 @@ const HomePage = () => {
         ))}
       </div>
 
-      {/* Products Section */}
+      {/* Products Section - Grid Layout */}
       <h2 style={{ marginTop: "20px" }}>Products</h2>
       {filteredProducts.length > 0 ? (
-        <ul style={{ listStyleType: "none", padding: 0 }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+            gap: "20px",
+            marginTop: "20px",
+          }}
+        >
           {filteredProducts.map((product) => (
-            <li key={product._id} style={{ margin: "10px 0" }}>
-              {product.name} - ${product.price}
-            </li>
+            <div
+              key={product._id}
+              style={{
+                border: "1px solid #ccc",
+                borderRadius: "8px",
+                padding: "10px",
+                textAlign: "center",
+              }}
+            >
+              <img
+                src={
+                  product.image && product.image.startsWith("data:image")
+                    ? product.image
+                    : `data:image/jpeg;base64,${product.image}`
+                }
+                alt={product.name}
+                style={{
+                  width: "100%",
+                  height: "150px",
+                  objectFit: "cover",
+                  marginBottom: "10px",
+                }}
+              />
+
+              <h3>{product.name}</h3>
+              <p>${product.price}</p>
+              {cartItems[product._id] ? (
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <button
+                    onClick={() => handleRemoveFromCart(product)}
+                    style={{
+                      padding: "5px 10px",
+                      backgroundColor: "#e74c3c",
+                      color: "white",
+                      borderRadius: "5px",
+                      border: "none",
+                      cursor: "pointer",
+                    }}
+                  >
+                    -
+                  </button>
+                  <span style={{ margin: "0 10px" }}>
+                    {cartItems[product._id]}
+                  </span>
+                  <button
+                    onClick={() => handleAddToCart(product)}
+                    style={{
+                      padding: "5px 10px",
+                      backgroundColor: "#2ecc71",
+                      color: "white",
+                      borderRadius: "5px",
+                      border: "none",
+                      cursor: "pointer",
+                    }}
+                  >
+                    +
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => handleAddToCart(product)}
+                  style={{
+                    padding: "10px 20px",
+                    backgroundColor: "#3498db",
+                    color: "white",
+                    borderRadius: "5px",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  Add
+                </button>
+              )}
+            </div>
           ))}
-        </ul>
+        </div>
       ) : (
-        <p>No products found for this category.</p>
+        <p>No products found.</p>
       )}
     </div>
   );
