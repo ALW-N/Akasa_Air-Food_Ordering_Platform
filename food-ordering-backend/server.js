@@ -21,6 +21,7 @@ app.use(cors({
 }));
 
 app.use(express.json());
+app.use('/api/products', require('./routes/productRoutes'));
 
 // Set up Multer storage and file handling
 const storage = multer.diskStorage({

@@ -1,15 +1,29 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "../axiosInstance";
 import { FaShoppingCart, FaSearch, FaBars, FaTimes } from "react-icons/fa";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useCart } from "../CartContext";
+import "./HomePage.css"; // Import CSS file for spinner
+
+const loadingMessages = [
+  "Preparing your delicious order...",
+  "Cooking up something special!",
+  "Hang tight! Your food is on its way...",
+  "Just a moment, great flavors ahead!",
+  "Delivering happiness to your doorstep!",
+  "Bringing the taste of joy to you!",
+];
 
 const HomePage = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [cartItems, setCartItems] = useState({});
   const [menuOpen, setMenuOpen] = useState(false);
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [loading, setLoading] = useState(true);
   const menuRef = useRef(null);
+  const navigate = useNavigate();
+  const { cartItems, updateCart } = useCart();
 
   // Fetch categories and products for normal users
   const fetchCategoriesAndProducts = async () => {
@@ -21,6 +35,8 @@ const HomePage = () => {
       setProducts(productsResponse.data);
     } catch (error) {
       console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false); // Set loading to false after fetching
     }
   };
 
@@ -37,7 +53,11 @@ const HomePage = () => {
   };
 
   const handleClickOutside = (event) => {
-    if (menuOpen && menuRef.current && !menuRef.current.contains(event.target)) {
+    if (
+      menuOpen &&
+      menuRef.current &&
+      !menuRef.current.contains(event.target)
+    ) {
       setMenuOpen(false);
     }
   };
@@ -64,33 +84,20 @@ const HomePage = () => {
       ? product.category.toString() === selectedCategory.toString()
       : true;
 
-    const matchesSearchTerm = product.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearchTerm = product.name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
 
     return matchesCategory && matchesSearchTerm;
   });
 
-  // Handle cart updates
   const handleAddToCart = (product) => {
-    setCartItems((prevItems) => ({
-      ...prevItems,
-      [product._id]: prevItems[product._id] ? prevItems[product._id] + 1 : 1,
-    }));
+    updateCart(product._id, (cartItems[product._id] || 0) + 1);
   };
 
   const handleRemoveFromCart = (product) => {
-    setCartItems((prevItems) => {
-      const updatedItems = { ...prevItems };
-
-      if (updatedItems[product._id] > 1) {
-        updatedItems[product._id] -= 1;
-      } else {
-        delete updatedItems[product._id]; // Remove the item from the cart if count reaches 0
-      }
-
-      return updatedItems;
-    });
+    updateCart(product._id, Math.max((cartItems[product._id] || 0) - 1, 0));
   };
-
   return (
     <div style={{ padding: "20px" }}>
       {/* Header Bar */}
@@ -142,7 +149,13 @@ const HomePage = () => {
           />
         </div>
         <div style={{ display: "flex", alignItems: "center" }}>
-          <FaShoppingCart size={25} style={{ cursor: "pointer" }} />
+          <FaShoppingCart
+            size={25}
+            style={{ cursor: "pointer" }}
+            onClick={() =>
+              navigate("/cart", { state: { cartItems, products } })
+            }
+          />
           <span style={{ marginLeft: "5px" }}>
             {Object.values(cartItems).reduce((acc, val) => acc + val, 0)}
           </span>
@@ -254,75 +267,136 @@ const HomePage = () => {
         ))}
       </div>
 
-      {/* Products Section - Grid Layout */}
-<h2 style={{ marginTop: "20px" }}>Products</h2>
-{filteredProducts.length > 0 ? (
-  <div
-    style={{
-      display: "grid",
-      gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-      gap: "20px",
-      marginTop: "20px",
-      // Removed maxHeight and overflowY to allow it to expand
-    }}
-  >
-    {filteredProducts.map((product) => (
-      <div
-        key={product._id}
-        style={{
-          border: "1px solid #ccc",
-          borderRadius: "8px",
-          padding: "10px",
-          textAlign: "center",
-        }}
-      >
-        <img
-          src={
-            product.image && product.image.startsWith("data:image")
-              ? product.image
-              : `data:image/jpeg;base64,${product.image}`
-          }
-          alt={product.name}
-          style={{
-            width: "100%",
-            height: "150px",
-            objectFit: "cover",
-            borderRadius: "8px",
-          }}
-        />
-        <h3>{product.name}</h3>
-        <p>Price: ₹{product.price.toFixed(2)}</p>
+      {/* Loading Indicator */}
+      {loading ? (
+        <div className="loader-container">
+          <div className="loader"></div>
+          <h2>
+            {
+              loadingMessages[
+                Math.floor(Math.random() * loadingMessages.length)
+              ]
+            }
+          </h2>{" "}
+          {/* Randomly selected message */}
+        </div>
+      ) : (
+        <>
+          {/* Products Section - Grid Layout */}
+          <h2 style={{ marginTop: "20px" }}>Products</h2>
+          {filteredProducts.length > 0 ? (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+                gap: "20px",
+              }}
+            >
+              {filteredProducts.map((product) => (
+                <div
+                  key={product._id}
+                  style={{
+                    border: "1px solid #ccc",
+                    borderRadius: "8px",
+                    padding: "10px",
+                    textAlign: "center",
+                    position: "relative",
+                  }}
+                >
+                  {/* Product Image */}
+                  {product.image ? (
+                    <img
+                      src={
+                        product.image.startsWith("data:image")
+                          ? product.image
+                          : `data:image/jpeg;base64,${product.image}`
+                      }
+                      alt={product.name}
+                      style={{
+                        width: "100%",
+                        height: "150px", // Fixed height for consistency
+                        objectFit: "cover",
+                        borderRadius: "8px",
+                      }}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        width: "100%",
+                        height: "150px",
+                        backgroundColor: "#ccc",
+                        borderRadius: "8px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      No Image
+                    </div>
+                  )}
+                  <h3>{product.name}</h3>
+                  <p>Price: ${product.price}</p>
+                  <p>Available: {product.quantity}</p>
 
-        {cartItems[product._id] ? (
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "10px" }}>
-            <button onClick={() => handleRemoveFromCart(product)}>-</button>
-            <span>{cartItems[product._id]}</span>
-            <button onClick={() => handleAddToCart(product)}>+</button>
-          </div>
-        ) : (
-          <button
-            onClick={() => handleAddToCart(product)}
-            style={{
-              backgroundColor: "#2ecc71",
-              color: "white",
-              padding: "10px",
-              border: "none",
-              borderRadius: "5px",
-              cursor: "pointer",
-            }}
-          >
-            Add to Cart
-          </button>
-        )}
-      </div>
-    ))}
-  </div>
-) : (
-  <p>No products found.</p>
-)}
-
+                  {/* Quantity Controls */}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginTop: "10px",
+                    }}
+                  >
+                    <button
+                      onClick={() => handleRemoveFromCart(product)}
+                      style={{
+                        padding: "5px",
+                        backgroundColor: "#e74c3c",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "5px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      −
+                    </button>
+                    <span style={{ margin: "0 10px" }}>
+                      {cartItems[product._id] || 0}
+                    </span>
+                    <button
+                      onClick={() => handleAddToCart(product)}
+                      style={{
+                        padding: "5px",
+                        backgroundColor:
+                          (cartItems[product._id] || 0) >= product.quantity
+                            ? "#95a5a6"
+                            : "#27ae60",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "5px",
+                        cursor:
+                          (cartItems[product._id] || 0) >= product.quantity
+                            ? "not-allowed"
+                            : "pointer",
+                      }}
+                      disabled={
+                        (cartItems[product._id] || 0) >= product.quantity
+                      }
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ textAlign: "center", marginTop: "20px" }}>
+              <h2>No products found</h2>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 };
-
 export default HomePage;
