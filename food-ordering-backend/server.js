@@ -1,4 +1,3 @@
-// server.js
 require('dotenv').config(); // Load .env file at the top of your server.js
 
 const express = require('express');
@@ -7,6 +6,7 @@ const connectDB = require('./config');
 const errorHandler = require('./middleware/errorHandler');
 const multer = require('multer');
 const path = require('path');
+const { saveOrder } = require('./controllers/orderController');
 
 const app = express();
 
@@ -21,7 +21,6 @@ app.use(cors({
 }));
 
 app.use(express.json());
-app.use('/api/products', require('./routes/productRoutes'));
 
 // Set up Multer storage and file handling
 const storage = multer.diskStorage({
@@ -37,9 +36,13 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // Routes
+app.use('/api/products', require('./routes/productRoutes'));
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/admin', upload.single('image'), require('./routes/adminRoutes')); // Use upload middleware for admin routes
 app.use('/api/user', require('./routes/userRoutes')); // Add user routes
+
+// Add the order route here instead of trying to use `router`
+app.post('/api/orders', saveOrder); // Use the saveOrder function directly
 
 // Error handling middleware
 app.use(errorHandler);

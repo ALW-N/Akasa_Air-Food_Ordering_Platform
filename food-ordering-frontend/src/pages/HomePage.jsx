@@ -44,6 +44,12 @@ const HomePage = () => {
     fetchCategoriesAndProducts();
   }, []);
 
+  const handleLogout = () => {
+    // Clear authentication tokens or any user-related data
+    localStorage.removeItem("token"); // or however you manage authentication
+    navigate("/"); // Redirect to the login page
+  };
+
   const handleSearchClick = () => {
     console.log(searchTerm);
   };
@@ -163,6 +169,7 @@ const HomePage = () => {
       </div>
 
       {/* Sliding Menu */}
+
       {menuOpen && (
         <div
           ref={menuRef}
@@ -194,10 +201,19 @@ const HomePage = () => {
           </div>
           <ul style={{ listStyleType: "none", padding: 0 }}>
             <li style={{ margin: "10px 0" }}>Home</li>
-            <li style={{ margin: "10px 0" }}>Orders</li>
+            <li
+              style={{ margin: "10px 0", cursor: "pointer" }}
+              onClick={() => navigate("/orders")} // Link to the Orders page
+            >
+              Orders
+            </li>
             <li style={{ margin: "10px 0" }}>Profile</li>
-            <li style={{ margin: "10px 0" }}>Settings</li>
-            <li style={{ margin: "10px 0" }}>Logout</li>
+            <li
+              style={{ margin: "10px 0", cursor: "pointer" }}
+              onClick={handleLogout} // Call the logout function
+            >
+              Logout
+            </li>
           </ul>
         </div>
       )}

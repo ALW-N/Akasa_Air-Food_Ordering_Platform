@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
-import axios from '../axiosInstance'; // Import the axios instance
+import { useNavigate } from 'react-router-dom';
+import axios from '../axiosInstance';
 
 const RegisterPage = () => {
-  const [firstName, setFirstName] = useState(''); // State for first name
-  const [lastName, setLastName] = useState(''); // State for last name
-  const [phoneNumber, setPhoneNumber] = useState(''); // State for phone number
-  const [email, setEmail] = useState(''); // State for email
-  const [password, setPassword] = useState(''); // State for password
-  const [errorMessage, setErrorMessage] = useState(''); // State for error messages
-  const navigate = useNavigate(); // Initialize useNavigate
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const navigate = useNavigate();
 
   const handleRegister = async () => {
     try {
@@ -20,47 +20,56 @@ const RegisterPage = () => {
         email,
         password,
       });
-      // Redirect to login page after successful registration
-      navigate('/login'); // Navigate to the login page
+      navigate('/login');
     } catch (error) {
       setErrorMessage(error.response?.data?.message || 'Registration failed');
     }
   };
 
   return (
-    <div>
-      {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
+    <div className="space-y-4">
+      {errorMessage && <p className="text-red-500 text-sm mb-4">{errorMessage}</p>}
       <input
         type="text"
         placeholder="First Name"
         value={firstName}
         onChange={(e) => setFirstName(e.target.value)}
+        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
       />
       <input
         type="text"
         placeholder="Last Name"
         value={lastName}
         onChange={(e) => setLastName(e.target.value)}
+        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
       />
       <input
         type="tel"
         placeholder="Phone Number"
         value={phoneNumber}
         onChange={(e) => setPhoneNumber(e.target.value)}
+        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
       />
       <input
         type="email"
         placeholder="Email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
+        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
       />
       <input
         type="password"
         placeholder="Password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
+        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
       />
-      <button onClick={handleRegister}>Register</button>
+      <button
+        onClick={handleRegister}
+        className="w-full bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700 transition duration-300"
+      >
+        Register
+      </button>
     </div>
   );
 };
